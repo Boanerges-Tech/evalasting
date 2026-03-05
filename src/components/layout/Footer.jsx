@@ -10,15 +10,15 @@ import Container from "./Container";
  */
 
 const menuLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
   { label: "Book a table", href: "#book" },
   { label: "Gallery", href: "#gallery" },
   { label: "Error 404", href: "#" },
 ];
 
 const cmsLinks = [
-  { label: "Menu", href: "#menu" },
+  { label: "Menu", href: "/menu" },
   { label: "Chef", href: "#chef" },
   { label: "Blog", href: "#blog" },
 ];

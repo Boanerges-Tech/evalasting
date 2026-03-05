@@ -64,7 +64,7 @@ export default function Hero() {
             {/* CTAs (side-by-side like Figma; wraps on tiny screens) */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="#menu"
+                href="/menu"
                 className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-brand-700 transition"
               >
                 Order Now

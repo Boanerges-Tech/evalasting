@@ -4,27 +4,29 @@ import Container from "./Container";
 
 /**
  * Behavior:
- * - Home + About are real routes
- * - Section links:
+ * - Routes: "/" (Home), "/about", "/menu"
+ * - Section links (Gallery/Review/FAQ):
  *   - If on home: smooth scroll to section
  *   - If not on home: navigate to "/#section" then scroll
- * - Mobile menu closes on user click (no setState inside useEffect)
+ * - Mobile menu closes on user click
  */
 
 const desktopLinks = [
   { type: "route", to: "/", label: "Home" },
-  { type: "section", hash: "#menu", label: "Menu" },
+  { type: "route", to: "/menu", label: "Menu" },
   { type: "route", to: "/about", label: "About" },
   { type: "section", hash: "#gallery", label: "Gallery" },
   { type: "section", hash: "#reviews", label: "Review" },
   { type: "section", hash: "#faq", label: "FAQ" },
 ];
 
-const mobileSections = [
-  { hash: "#menu", label: "Menu" },
-  { hash: "#gallery", label: "Gallery" },
-  { hash: "#reviews", label: "Review" },
-  { hash: "#faq", label: "FAQ" },
+const mobileLinks = [
+  { type: "route", to: "/", label: "Home" },
+  { type: "route", to: "/menu", label: "Menu" },
+  { type: "route", to: "/about", label: "About" },
+  { type: "section", hash: "#gallery", label: "Gallery" },
+  { type: "section", hash: "#reviews", label: "Review" },
+  { type: "section", hash: "#faq", label: "FAQ" },
 ];
 
 function scrollToHash(hash) {
@@ -40,27 +42,28 @@ export default function Navbar() {
 
   const isHome = pathname === "/";
 
-  // handles click for section links
   const goToSection = (hash) => {
-    // always close mobile menu on click
     setOpen(false);
 
     if (isHome) {
-      // smooth scroll on the same page
       scrollToHash(hash);
       return;
     }
 
-    // navigate to home with hash, then scroll after a tick
+    // go to home with hash, then scroll (after render)
     navigate(`/${hash}`);
-    setTimeout(() => scrollToHash(hash), 60);
+    setTimeout(() => scrollToHash(hash), 80);
   };
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-line">
       <Container className="h-16 flex items-center justify-between">
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
+        <Link
+          to="/"
+          className="flex items-center gap-2"
+          onClick={() => setOpen(false)}
+        >
           <div className="h-10 w-10 rounded-xl bg-ink grid place-items-center">
             <span className="text-white font-black text-sm">EA</span>
           </div>
@@ -128,32 +131,31 @@ export default function Navbar() {
       {open && (
         <div className="lg:hidden border-t border-line bg-white">
           <Container className="py-4 grid gap-2">
-            <Link
-              to="/"
-              onClick={() => setOpen(false)}
-              className="rounded-full border border-line px-5 py-2 text-sm font-semibold text-ink/80 hover:bg-gray-50 transition"
-            >
-              Home
-            </Link>
+            {mobileLinks.map((l) => {
+              if (l.type === "route") {
+                return (
+                  <Link
+                    key={l.label}
+                    to={l.to}
+                    onClick={() => setOpen(false)}
+                    className="rounded-full border border-line px-5 py-2 text-sm font-semibold text-ink/80 hover:bg-gray-50 transition"
+                  >
+                    {l.label}
+                  </Link>
+                );
+              }
 
-            <Link
-              to="/about"
-              onClick={() => setOpen(false)}
-              className="rounded-full border border-line px-5 py-2 text-sm font-semibold text-ink/80 hover:bg-gray-50 transition"
-            >
-              About
-            </Link>
-
-            {mobileSections.map((l) => (
-              <button
-                key={l.label}
-                type="button"
-                onClick={() => goToSection(l.hash)}
-                className="text-left rounded-full bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-700 transition"
-              >
-                {l.label}
-              </button>
-            ))}
+              return (
+                <button
+                  key={l.label}
+                  type="button"
+                  onClick={() => goToSection(l.hash)}
+                  className="text-left rounded-full bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-700 transition"
+                >
+                  {l.label}
+                </button>
+              );
+            })}
           </Container>
         </div>
       )}
