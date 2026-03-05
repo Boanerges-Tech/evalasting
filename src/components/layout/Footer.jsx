@@ -56,9 +56,9 @@ export default function Footer() {
             </div>
 
             <p className="mt-4 text-[12px] leading-relaxed text-muted max-w-[260px]">
-              A modern Framer template
+              A restaurant readily available
               <br />
-              for premium Restaurants.
+              to serve your needs regardless.
             </p>
 
             <div className="mt-6">
