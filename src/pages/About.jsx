@@ -13,6 +13,7 @@ import FAQ from "../components/home/FAQ";
 import CTA from "../components/home/CTA";
 import CraftedNote from "../components/about/CraftedNote";
 import EventsGrid from "../components/about/EventsGrid";
+import ChefsGrid from "../components/about/ChefsGrid";
 
 export default function About() {
   return (
@@ -24,9 +25,7 @@ export default function About() {
         <CraftedNote />
         <AboutSplit />
         <EventsGrid />
-        <WhyChoose />
-        <StatsBand />
-        <Gallery />
+        <ChefsGrid />
         <FAQ />
         <CTA />
       </main>
