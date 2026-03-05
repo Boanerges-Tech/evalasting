@@ -1,15 +1,45 @@
 import Container from "../layout/Container";
 
-function Step({ n, title, text }) {
+/**
+ * Figma HowToOrder target:
+ * - Left: small orange label, big serif headline (2 lines)
+ * - Below: 5-star row + short testimonial + avatar + name
+ * - Right: 3 steps list with (01)(02)(03) orange numbers + titles + muted text
+ * - Clean whitespace (no cards / borders)
+ *
+ * Put avatar image here (optional):
+ * public/assets/testimonials/sarah.jpg  -> /assets/testimonials/sarah.jpg
+ */
+
+const steps = [
+  {
+    n: "(01)",
+    title: "Select your date & time",
+    text:
+      "Choose the date that works best for your dining experience and let us know when you'll be joining us",
+  },
+  {
+    n: "(02)",
+    title: "Confirm your reservation",
+    text:
+      "Provide your name, contact info, and number of guests to help us prepare for your arrival and everything",
+  },
+  {
+    n: "(03)",
+    title: "Confirmation & preparation",
+    text:
+      "Review all your details carefully and confirm your booking with us for a seamless top dining experience",
+  },
+];
+
+function Stars() {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 shadow-soft2">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-brand-600 text-white grid place-items-center font-black">
-          {n}
-        </div>
-        <div className="font-extrabold text-ink">{title}</div>
-      </div>
-      <div className="mt-2 text-sm text-muted">{text}</div>
+    <div className="flex items-center gap-1 text-brand-600">
+      {"★★★★★".split("").map((s, i) => (
+        <span key={i} className="text-[14px] leading-none">
+          {s}
+        </span>
+      ))}
     </div>
   );
 }
@@ -18,69 +48,66 @@ export default function HowToOrder() {
   return (
     <section className="py-14 sm:py-16">
       <Container>
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-          {/* Steps */}
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
+          {/* LEFT */}
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-ink">
-              How to order
-            </h2>
-            <p className="mt-2 text-sm sm:text-base text-muted">
-              Quick steps. Smooth process. Your meal arrives fast.
-            </p>
+            <div className="text-[10px] font-extrabold tracking-[0.22em] text-brand-700">
+              SIMPLE RESERVATION PROCESS
+            </div>
 
-            <div className="mt-7 grid gap-3">
-              <Step n="1" title="Choose your meal" text="Browse our menu and select what you love." />
-              <Step n="2" title="Add details" text="Pick quantity, extras, and delivery location." />
-              <Step n="3" title="Checkout" text="Pay securely and confirm your order." />
-              <Step n="4" title="Enjoy!" text="We cook and deliver — you relax and enjoy." />
+            <h2 className="mt-4 font-display text-[32px] leading-[1.12] sm:text-[44px] sm:leading-[1.12] font-extrabold tracking-tight text-ink">
+              Make your Order
+              <br />
+              with just a few clicks
+            </h2>
+
+            <div className="mt-8">
+              <Stars />
+              <p className="mt-4 text-[13px] sm:text-[14px] leading-relaxed text-muted max-w-[520px]">
+                An unforgettable dining experience! The food was amazing, &amp;
+                the service was crazy
+              </p>
+
+              <div className="mt-5 flex items-center gap-3">
+                <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200 ring-1 ring-line">
+                  <img
+                    src="/assets/testimonials/sarah.jpg"
+                    alt="Sarah Johnson"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      // fallback if image not present
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement.style.background =
+                        "linear-gradient(135deg,#e5e7eb,#f3f4f6)";
+                    }}
+                  />
+                </div>
+                <div className="text-[13px] font-extrabold text-ink">
+                  Sarah Johnson
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Reservation / Order card */}
-          <div className="relative overflow-hidden rounded-3xl border border-line bg-gray-100 shadow-soft">
-            <div className="aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200" />
-
-            <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6 rounded-3xl border border-line bg-white/95 p-5 sm:p-6 shadow-soft">
-              <div className="font-black text-ink text-lg">Reserve a table / Quick order</div>
-              <p className="mt-1 text-sm text-muted">
-                Fill in and we’ll reach out instantly.
-              </p>
-
-              <form className="mt-4 grid gap-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    className="h-11 rounded-xl border border-line px-4 text-sm outline-none focus:border-brand-400"
-                    placeholder="Full name"
-                  />
-                  <input
-                    className="h-11 rounded-xl border border-line px-4 text-sm outline-none focus:border-brand-400"
-                    placeholder="Phone"
-                  />
+          {/* RIGHT */}
+          <div className="space-y-10">
+            {steps.map((s) => (
+              <div key={s.n} className="grid grid-cols-[52px_1fr] gap-4">
+                <div className="text-brand-600 text-[12px] font-extrabold">
+                  {s.n}
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    className="h-11 rounded-xl border border-line px-4 text-sm outline-none focus:border-brand-400"
-                    placeholder="Date"
-                  />
-                  <input
-                    className="h-11 rounded-xl border border-line px-4 text-sm outline-none focus:border-brand-400"
-                    placeholder="Time"
-                  />
+                <div>
+                  <div className="text-[14px] font-extrabold text-ink">
+                    {s.title}
+                  </div>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-muted max-w-[520px]">
+                    {s.text}
+                  </p>
                 </div>
-
-                <button
-                  type="button"
-                  className="mt-1 h-11 rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700 shadow-soft"
-                >
-                  Submit
-                </button>
-
-                <div className="text-xs text-muted">
-                  By submitting, you agree we can contact you about your request.
-                </div>
-              </form>
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </Container>

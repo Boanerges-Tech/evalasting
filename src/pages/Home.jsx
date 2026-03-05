@@ -9,6 +9,7 @@ import WhyChoose from "../components/home/WhyChoose";
 import StatsBand from "../components/home/StatsBand";
 import Gallery from "../components/home/Gallery";
 import HowToOrder from "../components/home/HowToOrder";
+import OpeningTime from "../components/home/OpeningTime";
 import Testimonials from "../components/home/Testimonials";
 import Blog from "../components/home/Blog";
 import FAQ from "../components/home/FAQ";
@@ -26,6 +27,7 @@ export default function Home() {
         <StatsBand />
         <Gallery />
         <HowToOrder />
+       <OpeningTime />
         <Testimonials />
         <Blog />
         <FAQ />
