@@ -14,7 +14,7 @@ const menuLinks = [
   { label: "About", href: "/about" },
   { label: "Book a table", href: "#book" },
   { label: "Gallery", href: "#gallery" },
-  { label: "Error 404", href: "#" },
+  { label: "Privacy Policy", href: "#" },
 ];
 
 const cmsLinks = [
