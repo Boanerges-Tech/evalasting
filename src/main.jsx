@@ -11,6 +11,8 @@ import CheckoutPayment from "./pages/CheckoutPayment.jsx";
 import CheckoutReview from "./pages/CheckoutReview.jsx";
 import OrderSuccess from "./pages/OrderSuccess.jsx";
 import Reservations from "./pages/Reservations.jsx";
+import SignIn from "./pages/SignIn.jsx";
+import SignUp from "./pages/SignUp.jsx";
 
 import "./index.css";
 
@@ -27,6 +29,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/checkout/review" element={<CheckoutReview />} />
         <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/reservations" element={<Reservations />} />
+        <Route path="/signin" element={<SignIn />} />
+<Route path="/signup" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
