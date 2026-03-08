@@ -1,4 +1,6 @@
 import Container from "../layout/Container";
+import { Link } from "react-router-dom";
+
 
 /**
  * Figma Product Listing Page hero:
@@ -41,9 +43,12 @@ export default function ProductListingHero({ product }) {
             <div className="mt-6 flex items-center gap-4">
               <div className="text-[14px] font-extrabold text-ink">{product.price}</div>
 
-              <button className="rounded-full bg-brand-600 px-6 py-2.5 text-[12px] font-extrabold text-white shadow-soft hover:bg-brand-700 transition">
-                Add to cart
-              </button>
+              <Link
+  to="/checkout"
+  className="rounded-full bg-brand-600 px-6 py-2.5 text-[12px] font-extrabold text-white shadow-soft hover:bg-brand-700 transition"
+>
+  Add to cart
+</Link>
             </div>
           </div>
         </div>
