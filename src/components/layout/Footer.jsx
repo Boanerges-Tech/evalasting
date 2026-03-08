@@ -14,7 +14,7 @@ const menuLinks = [
   { label: "About", href: "/about" },
   { label: "Book a table", href: "#book" },
   { label: "Gallery", href: "#gallery" },
-  { label: "Error 404", href: "#" },
+  { label: "Privacy Policy", href: "#" },
 ];
 
 const cmsLinks = [
@@ -140,7 +140,7 @@ export default function Footer() {
             <div className="mt-7 grid gap-3">
               <div className="flex items-center gap-3 text-[12px] text-muted">
                 <span className="h-2 w-2 rounded-full bg-brand-600" />
-                <span>testing@gmail.com</span>
+                <span>support@evaalasting-arm.com</span>
               </div>
 
               <div className="flex items-center gap-3 text-[12px] text-muted">
