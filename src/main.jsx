@@ -13,11 +13,15 @@ import OrderSuccess from "./pages/OrderSuccess.jsx";
 import Reservations from "./pages/Reservations.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
+import { AuthProvider } from "./context/AuthContext";
+import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
@@ -30,8 +34,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/reservations" element={<Reservations />} />
         <Route path="/signin" element={<SignIn />} />
-<Route path="/signup" element={<SignUp />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  }
+/>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );

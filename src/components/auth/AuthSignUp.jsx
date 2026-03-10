@@ -91,8 +91,10 @@ export default function AuthSignUp() {
 
       setSuccess(data.message || "Account created successfully.");
 
+      
       setTimeout(() => {
-        navigate("/");
+        
+        navigate("/dashboard");
       }, 1000);
     } catch (err) {
       setError(err.message || "Something went wrong.");

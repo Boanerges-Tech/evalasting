@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthShell from "./AuthShell";
+import { useAuth } from "../../context/useAuth";
 
 const API_BASE = "https://evaalasting.othniel-phantasy.com.ng/api";
 
@@ -26,6 +27,7 @@ function Input(props) {
 
 export default function AuthSignIn() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -68,8 +70,9 @@ export default function AuthSignIn() {
 
       setSuccess(data.message || "Signed in successfully.");
 
+      setUser(data.user);
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 900);
     } catch (err) {
       setError(err.message || "Something went wrong.");

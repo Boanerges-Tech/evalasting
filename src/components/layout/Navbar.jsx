@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "./Container";
+import { useAuth } from "../../context/useAuth";
 
 /**
  * Behavior:
@@ -39,6 +40,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const isHome = pathname === "/";
 
@@ -102,12 +104,30 @@ export default function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-3">
-          <Link
-            to="/signin"
-            className="hidden sm:inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink/80 hover:bg-gray-50"
-          >
-            Sign in
-          </Link>
+          {user ? (
+  <>
+    <Link
+      to="/dashboard"
+      className="hidden sm:inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink/80 hover:bg-gray-50"
+    >
+      Dashboard
+    </Link>
+
+    <button
+      onClick={logout}
+      className="rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-700 transition"
+    >
+      Logout
+    </button>
+  </>
+) : (
+  <Link
+    to="/signin"
+    className="hidden sm:inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink/80 hover:bg-gray-50"
+  >
+    Sign in
+  </Link>
+)}
 
           <Link
             to="/reservations"
