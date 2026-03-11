@@ -113,6 +113,8 @@ export default function DashboardShell() {
   const user = overview?.user;
   const stats = overview?.stats;
 
+  
+  
   return (
     <div className="mx-auto grid max-w-[1150px] gap-0 lg:grid-cols-[260px_1fr]">
       {/* Sidebar */}
@@ -130,8 +132,9 @@ export default function DashboardShell() {
           </div>
         </div>
 
+        
         <div className="mt-6 space-y-2">
-          <SidebarItem label="Overview" active />
+          <SidebarItem label="Overview" active sublabel="Your dashboard" to="/dashboard"  />
           <SidebarItem label="My Orders" />
           <SidebarItem label="Addresses" />
           <SidebarItem label="Payment Methods" />
@@ -198,7 +201,13 @@ export default function DashboardShell() {
           <div className="mt-3 grid gap-3">
             <ActionButton label="Order Meals" primary />
             <ActionButton label="Manage Subscription" />
-            <ActionButton label="View Orders" />
+            <Link
+  to="/orders"
+  className="flex w-full items-center justify-between rounded-xl border border-line bg-white px-4 py-3 text-[12px] font-semibold text-ink transition hover:bg-gray-50"
+>
+  <span>View Orders</span>
+  <span>›</span>
+</Link>
           </div>
         </div>
 
