@@ -20,7 +20,7 @@ import Orders from "./pages/Orders.jsx";
 import Addresses from "./pages/Addresses.jsx";
 import PaymentMethods from "./pages/PaymentMethods.jsx";
 import AccountSettings from "./pages/AccountSettings.jsx";
-import Support from "./pages/Support.jsx";
+import Support from "./pages/support.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
