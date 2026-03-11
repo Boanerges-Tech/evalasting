@@ -27,7 +27,7 @@ const mobileLinks = [
   { type: "route", to: "/about", label: "About" },
   { type: "section", hash: "#gallery", label: "Gallery" },
   { type: "section", hash: "#reviews", label: "Review" },
-  { type: "section", to: "/signin", label: "Signin" },
+  { type: "route", to: "/signin", label: "Signin" },
 ];
 
 function scrollToHash(hash) {
