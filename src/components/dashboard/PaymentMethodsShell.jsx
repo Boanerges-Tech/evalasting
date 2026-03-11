@@ -213,6 +213,7 @@ export default function PaymentMethodsShell() {
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const addCardFormRef = useRef(null);
+  
 
   const [form, setForm] = useState({
     card_number: "",

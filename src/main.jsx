@@ -19,6 +19,8 @@ import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import Orders from "./pages/Orders.jsx";
 import Addresses from "./pages/Addresses.jsx";
 import PaymentMethods from "./pages/PaymentMethods.jsx";
+import AccountSettings from "./pages/AccountSettings.jsx";
+import Support from "./pages/Support.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -67,6 +69,24 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <PaymentMethods />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/account-settings"
+  element={
+    <ProtectedRoute>
+      <AccountSettings />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/support"
+  element={
+    <ProtectedRoute>
+      <Support />
     </ProtectedRoute>
   }
 />
