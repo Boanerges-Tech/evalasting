@@ -21,6 +21,11 @@ import Addresses from "./pages/Addresses.jsx";
 import PaymentMethods from "./pages/PaymentMethods.jsx";
 import AccountSettings from "./pages/AccountSettings.jsx";
 import Support from "./pages/support.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import AdminRoute from "./components/admin/AdminRoute.jsx";
+import AdminOrders from "./pages/AdminOrders.jsx";
+import AdminCustomers from "./pages/AdminCustomers.jsx";
+import AdminAddProduct from "./pages/AdminAddProduct.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -63,7 +68,23 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </ProtectedRoute>
   }
 />
+<Route
+  path="/admin/orders"
+  element={
+    <AdminRoute>
+      <AdminOrders />
+    </AdminRoute>
+  }
+/>
 
+<Route
+  path="/admin/add-product"
+  element={
+    <AdminRoute>
+      <AdminAddProduct />
+    </AdminRoute>
+  }
+/>
 <Route
   path="/payment-methods"
   element={
@@ -73,6 +94,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 
+<Route
+  path="/admin"
+  element={
+    <AdminRoute>
+      <AdminDashboard />
+    </AdminRoute>
+  }
+/>
+<Route
+  path="/admin/customers"
+  element={
+    <AdminRoute>
+      <AdminCustomers />
+    </AdminRoute>
+  }
+/>
 <Route
   path="/account-settings"
   element={

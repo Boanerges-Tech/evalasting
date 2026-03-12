@@ -115,7 +115,11 @@ export default function AuthSignIn() {
       setUser(data.user);
 
       setTimeout(() => {
-        navigate("/dashboard");
+        if (data.user?.is_admin) {
+  navigate("/admin");
+} else {
+  navigate("/dashboard");
+}
       }, 700);
     } catch (err) {
       setError(err.message || "Something went wrong.");

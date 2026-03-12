@@ -130,6 +130,9 @@ export default function AccountSettingsShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [overviewUser, setOverviewUser] = useState(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoMsg, setPhotoMsg] = useState("");
+  const [photoErr, setPhotoErr] = useState("");
 
   const [profileForm, setProfileForm] = useState({
     first_name: "",
@@ -225,6 +228,41 @@ export default function AccountSettingsShell() {
       setProfileErr(err.message || "Something went wrong.");
     }
   }
+
+  async function handlePhotoUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  setPhotoUploading(true);
+  setPhotoMsg("");
+  setPhotoErr("");
+
+  try {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const res = await fetch(`${API_BASE}/dashboard/account-upload-photo.php`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.message || "Failed to upload photo.");
+    }
+
+    setPhotoMsg(data.message || "Profile photo updated.");
+    await loadSettings();
+    await refreshUser();
+  } catch (err) {
+    setPhotoErr(err.message || "Something went wrong.");
+  } finally {
+    setPhotoUploading(false);
+    e.target.value = "";
+  }
+}
 
   async function submitPassword(e) {
     e.preventDefault();
@@ -349,17 +387,45 @@ export default function AccountSettingsShell() {
                 <div className="text-[14px] font-semibold text-ink">Personal Information</div>
 
                 <div className="mt-5 flex flex-wrap items-center gap-4">
-                  <div className="grid h-14 w-14 place-items-center rounded-full bg-[#0e5e56] text-[16px] font-extrabold text-white">
-                    {initials}
-                  </div>
-                  <div>
-                    <div className="text-[12px] font-semibold text-ink">Profile photo</div>
-                    <div className="mt-1 text-[10px] text-muted">JPG, PNG, max 5MB</div>
-                    <button className="mt-2 rounded-full border border-[#d9d1c7] bg-[#faf7f2] px-4 py-2 text-[11px] font-semibold text-muted">
-                      Upload photo
-                    </button>
-                  </div>
-                </div>
+  <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-[#0e5e56] text-[16px] font-extrabold text-white">
+    {overviewUser?.profile_photo ? (
+      <img
+        src={`https://evaalasting.othniel-phantasy.com.ng${overviewUser.profile_photo}`}
+        alt={fullName}
+        className="h-full w-full object-cover"
+      />
+    ) : (
+      initials
+    )}
+  </div>
+
+  <div>
+    <div className="text-[12px] font-semibold text-ink">Profile photo</div>
+    <div className="mt-1 text-[10px] text-muted">JPG, PNG, WEBP, max 5MB</div>
+
+    <label className="mt-2 inline-flex cursor-pointer rounded-full border border-[#d9d1c7] bg-[#faf7f2] px-4 py-2 text-[11px] font-semibold text-muted hover:bg-[#f3eee7]">
+      {photoUploading ? "Uploading..." : "Upload photo"}
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handlePhotoUpload}
+      />
+    </label>
+  </div>
+</div>
+
+{photoErr ? (
+  <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-700">
+    {photoErr}
+  </div>
+) : null}
+
+{photoMsg ? (
+  <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-[12px] text-green-700">
+    {photoMsg}
+  </div>
+) : null}
 
                 <form className="mt-5 grid gap-4" onSubmit={submitProfile}>
                   <div className="grid gap-4 sm:grid-cols-2">
