@@ -1,3 +1,4 @@
+// src/context/AuthContext.jsx
 import { useEffect, useState } from "react";
 import { AuthContext } from "./auth-context";
 

@@ -30,11 +30,13 @@ import AdminCatering from "./pages/AdminCatering.jsx";
 import AdminSalesReport from "./pages/AdminSalesReport.jsx";
 import AdminProducts from "./pages/AdminProducts"
 import AdminSettings from "./pages/AdminSettings"
+import { CartProvider } from "./context/cartProvider.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
+      <CartProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
@@ -169,7 +171,12 @@ element={
   }
 />
       </Routes>
+
+      
+      
+    
     </BrowserRouter>
+    </CartProvider>
     </AuthProvider>
   </React.StrictMode>
 );

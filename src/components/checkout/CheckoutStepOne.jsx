@@ -1,6 +1,7 @@
+// src/pages/CheckoutStepOne.jsx
 import Container from "../layout/Container";
 import { Link } from "react-router-dom";
-
+import { useCart } from "../../context/useCart";
 
 function Step({ number, label, active = false }) {
   return (
@@ -67,6 +68,13 @@ function RadioRow({ label, eta, price, active = false }) {
 }
 
 export default function CheckoutStepOne() {
+  const { cart } = useCart();
+
+  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const shipping = 5.99;
+  const discount = 0;
+  const total = subtotal + shipping - discount;
+
   return (
     <section className="py-10 sm:py-14">
       <Container className="max-w-6xl">
@@ -84,7 +92,7 @@ export default function CheckoutStepOne() {
 
           {/* Main grid */}
           <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
-            {/* Left */}
+            {/* Left: Shipping */}
             <div className="space-y-5">
               <div>
                 <SectionTitle>Shipping Address</SectionTitle>
@@ -120,7 +128,7 @@ export default function CheckoutStepOne() {
                     <RadioRow
                       label="Standard Shipping"
                       eta="4–6 Business Days"
-                      price="$5.99"
+                      price={`$${shipping.toFixed(2)}`}
                       active
                     />
                     <RadioRow
@@ -131,66 +139,76 @@ export default function CheckoutStepOne() {
                   </div>
 
                   <Link
-  to="/checkout/payment"
-  className="mt-4 inline-flex w-full items-center justify-center rounded-sm bg-brand-600 px-5 py-3 text-[12px] font-extrabold text-white shadow-soft hover:bg-brand-700 transition"
->
-  Continue to Payment
-</Link>
+                    to="/checkout/payment"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-sm bg-brand-600 px-5 py-3 text-[12px] font-extrabold text-white shadow-soft hover:bg-brand-700 transition"
+                  >
+                    Continue to Payment
+                  </Link>
                 </Card>
               </div>
             </div>
 
-            {/* Right */}
+            {/* Right: Order Summary */}
             <div>
               <Card>
                 <div className="border-b border-line px-4 py-3 text-[12px] font-extrabold text-ink">
                   Order Summary
                 </div>
 
-                <div className="px-4 py-4">
-                  {/* Product */}
-                  <div className="flex items-start gap-3 border-b border-line pb-4">
-                    <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-100 ring-1 ring-line">
-                      <img
-                        src="/assets/products/truffle-fries.jpg"
-                        alt="Truffle fries"
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
+                <div className="px-4 py-4 space-y-4">
+                  {cart.length === 0 ? (
+                    <div className="text-[12px] text-muted">No products in cart</div>
+                  ) : (
+                    cart.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-3 border-b border-line pb-4"
+                      >
+                        <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-100 ring-1 ring-line">
+                          <img
+                            src={item.img}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
 
-                    <div className="flex-1">
-                      <div className="text-[12px] font-extrabold text-ink">
-                        Truffle fries
-                      </div>
-                      <div className="mt-2 text-[11px] text-muted">
-                        Quantity: 1
-                      </div>
-                    </div>
+                        <div className="flex-1">
+                          <div className="text-[12px] font-extrabold text-ink">
+                            {item.name}
+                          </div>
+                          <div className="mt-2 text-[11px] text-muted">
+                            Quantity: {item.quantity}
+                          </div>
+                        </div>
 
-                    <div className="text-[12px] font-semibold text-ink">$42.99</div>
-                  </div>
+                        <div className="text-[12px] font-semibold text-ink">
+                          ${ (item.price * item.quantity).toFixed(2) }
+                        </div>
+                      </div>
+                    ))
+                  )}
 
                   {/* Totals */}
                   <div className="mt-4 space-y-3 text-[12px]">
                     <div className="flex items-center justify-between">
                       <span className="text-muted">Subtotal</span>
-                      <span className="font-semibold text-ink">$42.99</span>
+                      <span className="font-semibold text-ink">${subtotal.toFixed(2)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted">Shipping</span>
-                      <span className="font-semibold text-ink">$5.99</span>
+                      <span className="font-semibold text-ink">${shipping.toFixed(2)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted">Discount</span>
-                      <span className="font-semibold text-ink">$0.00</span>
+                      <span className="font-semibold text-ink">${discount.toFixed(2)}</span>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-line pt-3">
                       <span className="font-extrabold text-ink">Total</span>
-                      <span className="font-extrabold text-brand-700">$50.98</span>
+                      <span className="font-extrabold text-brand-700">${total.toFixed(2)}</span>
                     </div>
                   </div>
 
