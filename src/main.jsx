@@ -26,6 +26,10 @@ import AdminRoute from "./components/admin/AdminRoute.jsx";
 import AdminOrders from "./pages/AdminOrders.jsx";
 import AdminCustomers from "./pages/AdminCustomers.jsx";
 import AdminAddProduct from "./pages/AdminAddProduct.jsx";
+import AdminCatering from "./pages/AdminCatering.jsx";
+import AdminSalesReport from "./pages/AdminSalesReport.jsx";
+import AdminProducts from "./pages/AdminProducts"
+import AdminSettings from "./pages/AdminSettings"
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -60,6 +64,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </ProtectedRoute>
   }
 />
+
+<Route
+path="/admin/settings"
+element={
+<AdminRoute>
+<AdminSettings/>
+</AdminRoute>
+}
+/>
+
 <Route
   path="/Addresses"
   element={
@@ -67,6 +81,24 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Addresses />
     </ProtectedRoute>
   }
+/>
+
+<Route
+path="/admin/reports"
+element={
+<AdminRoute>
+<AdminSalesReport/>
+</AdminRoute>
+}
+/>
+
+<Route
+path="/admin/products"
+element={
+<AdminRoute>
+<AdminProducts/>
+</AdminRoute>
+}
 />
 <Route
   path="/admin/orders"
@@ -125,6 +157,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ProtectedRoute>
       <Support />
     </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/admin/catering"
+  element={
+    <AdminRoute>
+      <AdminCatering />
+    </AdminRoute>
   }
 />
       </Routes>
