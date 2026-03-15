@@ -74,7 +74,7 @@ export default function CheckoutStepTwo() {
   }, []);
 
   // handle continue to review
-  const handleContinue = async () => {
+const handleContinue = async () => {
     if (!user && !guestMode) {
       const proceed = window.confirm(
         "You are not logged in. Login/Signup or continue as guest?"
@@ -82,13 +82,20 @@ export default function CheckoutStepTwo() {
       if (!proceed) return;
     }
 
-    // save order to DB
+    if (!selectedMethod) {
+      alert("Please select a payment method");
+      return;
+    }
+
     try {
       const res = await fetch(
-        "https://evaalasting.othniel-phantasy.com.ng/api/orders.php",
+        "https://evaalasting.othniel-phantasy.com.ng/api/dashboard/orders.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
           credentials: "include",
           body: JSON.stringify({
             userId: user?.id || null,
@@ -101,16 +108,31 @@ export default function CheckoutStepTwo() {
           }),
         }
       );
+
+      // Check if response is actually JSON before parsing
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server returned non-JSON response");
+      }
+
       const json = await res.json();
+      
       if (json.ok) {
         clearCart();
-        navigate("/checkout/review", { state: { orderId: json.orderId } });
+        navigate("/checkout/review", { 
+            state: { 
+                orderId: json.orderId,
+                orderNumber: json.orderNumber 
+            } 
+        });
       } else {
         alert(json.message || "Failed to save order");
       }
     } catch (err) {
-      console.error(err);
-      alert("Error saving order");
+      console.error("Order Save Error:", err);
+      alert("Error saving order. Please check console for details.");
     }
   };
 
