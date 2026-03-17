@@ -181,12 +181,12 @@ export default function AuthSignIn() {
                   Password
                 </label>
 
-                <button
-                  type="button"
+                <Link
+      to="/ForgotPassword"
                   className="text-[12px] font-semibold text-brand-700 hover:underline"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
 
               <div className="relative">

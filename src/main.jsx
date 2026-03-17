@@ -31,6 +31,7 @@ import AdminSalesReport from "./pages/AdminSalesReport.jsx";
 import AdminProducts from "./pages/AdminProducts"
 import AdminSettings from "./pages/AdminSettings"
 import { CartProvider } from "./context/cartProvider.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -67,6 +68,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 
+<Route path="/ForgotPassword" element={<ForgotPassword/>} />
 <Route
 path="/admin/settings"
 element={
