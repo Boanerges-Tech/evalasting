@@ -24,7 +24,7 @@ function FilterPill({ active, children, onClick }) {
 }
 
 /* ================= PRODUCT MODAL ================= */
-function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
+function ProductModal({ item, onClose, setShowCheckout }) {
   const { addToCart } = useCart();
 
   const [qty, setQty] = useState(1);
@@ -69,7 +69,6 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
       >
-        {/* LEFT: IMAGE SECTION */}
         <div className="md:w-5/12 bg-gray-50 flex items-center justify-center p-6 relative">
           <button 
             onClick={onClose} 
@@ -84,7 +83,6 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
           />
         </div>
 
-        {/* RIGHT: CONTENT SECTION */}
         <div className="md:w-7/12 p-6 overflow-y-auto custom-scrollbar flex flex-col">
           <div className="flex justify-between items-start mb-2">
             <div>
@@ -100,7 +98,6 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
           </div>
 
           <div className="space-y-5">
-            {/* PRICE & QTY ROW */}
             <div className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl">
               <div className="flex items-center gap-4">
                 <button 
@@ -119,7 +116,6 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
               </div>
             </div>
 
-            {/* ADDONS */}
             <div>
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Add Extra Toppings</h3>
               <div className="grid grid-cols-1 gap-2">
@@ -140,7 +136,6 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
               </div>
             </div>
 
-            {/* PEPPER SLIDER */}
             <div>
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                 Spice Level: <span className="text-brand-600 ml-1">{spiceLabels[spice - 1]} 🌶️</span>
@@ -166,7 +161,6 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
               </div>
             </div>
 
-            {/* ACTION BUTTONS */}
             <div className="flex flex-col gap-2 pt-2">
               <button
                 onClick={handleBuyNow}
@@ -191,15 +185,21 @@ function ProductModal({ item, onClose, onBuyNow, setShowCheckout }) {
 /* ================= CHECKOUT MODAL ================= */
 function CheckoutModal({ onClose }) {
   const { cart, clearCart } = useCart();
-
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  // 1. Get logged in user from localStorage (Common pattern)
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "null");
+
+  // 2. Prefill shipping state with user data if it exists
   const [shipping, setShipping] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
+    name: loggedInUser?.name || "",
+    email: loggedInUser?.email || "",
+    phone: loggedInUser?.phone || "",
+    address: loggedInUser?.address || "",
+    city: loggedInUser?.city || "",
+    state: loggedInUser?.state || "",
+    country: loggedInUser?.country || "Nigeria",
   });
 
   const subtotal = cart.reduce(
@@ -218,7 +218,7 @@ function CheckoutModal({ onClose }) {
     const handler = window.PaystackPop.setup({
       key: "pk_test_your_paystack_public_key",
       email: shipping.email,
-      amount: total * 100,
+      amount: Math.round(total * 100),
       currency: "USD",
       callback: function (response) {
         placeOrder("paystack", response.reference);
@@ -232,7 +232,6 @@ function CheckoutModal({ onClose }) {
 
   const payWithStripe = async () => {
     const stripe = await stripePromise;
-
     const res = await fetch(
       "https://evaalasting.othniel-phantasy.com.ng/api/payments/create-stripe-session.php",
       {
@@ -241,17 +240,12 @@ function CheckoutModal({ onClose }) {
         body: JSON.stringify({ cart, total, email: shipping.email }),
       }
     );
-
     const session = await res.json();
-
-    await stripe.redirectToCheckout({
-      sessionId: session.id,
-    });
+    await stripe.redirectToCheckout({ sessionId: session.id });
   };
 
   const placeOrder = async (method = "manual", reference = "") => {
     setLoading(true);
-
     try {
       const res = await fetch(
         "https://evaalasting.othniel-phantasy.com.ng/api/orders/create-order.php",
@@ -259,11 +253,14 @@ function CheckoutModal({ onClose }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            userId: loggedInUser?.id || null, // Pass user ID to backend
             shipping,
             paymentMethod: method,
             paymentReference: reference,
             items: cart.map((p) => ({
-              productId: p.id,
+              id: p.id,
+              name: p.name,
+              price: p.price,
               quantity: p.quantity,
             })),
             subtotal,
@@ -274,132 +271,112 @@ function CheckoutModal({ onClose }) {
       );
 
       const data = await res.json();
-
       if (data.success) {
         clearCart();
         alert("Order placed successfully!");
         onClose();
+      } else {
+        alert("Error: " + (data.error || "Unknown error"));
       }
     } catch (err) {
       console.error(err);
-      alert("Order failed");
+      alert("Order failed to connect to server");
     }
-
     setLoading(false);
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[110] p-4">
-      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden grid md:grid-cols-2">
-        <div className="p-6 border-r border-gray-100">
-          <div className="flex gap-4 mb-6">
-            <span className={step === 1 ? "font-bold" : "text-gray-400"}>
-              Shipping
-            </span>
-            <span className={step === 2 ? "font-bold" : "text-gray-400"}>
-              Payment
-            </span>
-            <span className={step === 3 ? "font-bold" : "text-gray-400"}>
-              Review
-            </span>
+      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden grid md:grid-cols-2 max-h-[90vh]">
+        <div className="p-6 border-r border-gray-100 overflow-y-auto">
+          <div className="flex justify-between items-center mb-6">
+             <h2 className="text-xl font-bold">Checkout</h2>
+             <button onClick={onClose} className="text-gray-400 hover:text-ink">✕</button>
+          </div>
+          
+          <div className="flex gap-4 mb-6 text-xs uppercase tracking-widest">
+            <span className={step === 1 ? "font-bold text-brand-600 border-b-2 border-brand-600" : "text-gray-400"}>Shipping</span>
+            <span className={step === 2 ? "font-bold text-brand-600 border-b-2 border-brand-600" : "text-gray-400"}>Payment</span>
+            <span className={step === 3 ? "font-bold text-brand-600 border-b-2 border-brand-600" : "text-gray-400"}>Review</span>
           </div>
 
           <AnimatePresence mode="wait">
             {step === 1 && (
-              <motion.div key="shipping"
-                initial={{ x: 80, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -80, opacity: 0 }}>
-                <input name="name" placeholder="Full Name"
-                  onChange={handleChange}
-                  className="border w-full p-2 rounded mb-3"/>
-                <input name="email" placeholder="Email"
-                  onChange={handleChange}
-                  className="border w-full p-2 rounded mb-3"/>
-                <input name="phone" placeholder="Phone"
-                  onChange={handleChange}
-                  className="border w-full p-2 rounded mb-3"/>
-                <input name="address" placeholder="Address"
-                  onChange={handleChange}
-                  className="border w-full p-2 rounded mb-4"/>
-                <button
-                  onClick={() => setStep(2)}
-                  className="bg-brand-600 text-white w-full py-3 rounded font-bold"
-                >
-                  Continue
+              <motion.div key="shipping" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }}>
+                <div className="space-y-3">
+                  <input name="name" value={shipping.name} placeholder="Full Name" onChange={handleChange} className="border w-full p-2.5 rounded-xl outline-brand-500"/>
+                  <input name="email" value={shipping.email} placeholder="Email" onChange={handleChange} className="border w-full p-2.5 rounded-xl outline-brand-500"/>
+                  <input name="phone" value={shipping.phone} placeholder="Phone Number" onChange={handleChange} className="border w-full p-2.5 rounded-xl outline-brand-500"/>
+                  <input name="address" value={shipping.address} placeholder="Address" onChange={handleChange} className="border w-full p-2.5 rounded-xl outline-brand-500"/>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input name="city" value={shipping.city} placeholder="City" onChange={handleChange} className="border w-full p-2.5 rounded-xl outline-brand-500"/>
+                    <input name="state" value={shipping.state} placeholder="State" onChange={handleChange} className="border w-full p-2.5 rounded-xl outline-brand-500"/>
+                  </div>
+                </div>
+                <button onClick={() => setStep(2)} className="bg-brand-600 text-white w-full py-3.5 rounded-xl font-bold mt-6 shadow-lg shadow-brand-100">
+                  Continue to Payment
                 </button>
               </motion.div>
             )}
 
             {step === 2 && (
-              <motion.div key="payment"
-                initial={{ x: 80, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -80, opacity: 0 }}>
-                <button
-                  onClick={payWithPaystack}
-                  className="w-full border p-3 rounded mb-3 hover:bg-gray-50">
-                  Pay with Paystack
-                </button>
-                <button
-                  onClick={payWithStripe}
-                  className="w-full border p-3 rounded mb-3 hover:bg-gray-50">
-                  Pay with Stripe
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  className="text-sm text-gray-500 underline mt-2">
-                  Pay later / Cash on delivery
-                </button>
+              <motion.div key="payment" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+                <div className="space-y-3">
+                  <button onClick={payWithPaystack} className="w-full border-2 border-gray-100 p-4 rounded-xl flex items-center justify-between hover:border-brand-500 transition-all group">
+                    <span className="font-bold group-hover:text-brand-600">Pay with Paystack</span>
+                    <span>💳</span>
+                  </button>
+                  <button onClick={payWithStripe} className="w-full border-2 border-gray-100 p-4 rounded-xl flex items-center justify-between hover:border-brand-500 transition-all group">
+                    <span className="font-bold group-hover:text-brand-600">Pay with Stripe</span>
+                    <span>🌍</span>
+                  </button>
+                  <button onClick={() => setStep(3)} className="w-full py-3 text-gray-400 font-medium hover:text-brand-600">
+                    Skip for Cash on Delivery
+                  </button>
+                </div>
+                <button onClick={() => setStep(1)} className="w-full mt-4 text-sm text-gray-400">Back to Shipping</button>
               </motion.div>
             )}
 
             {step === 3 && (
-              <motion.div key="review"
-                initial={{ x: 80, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -80, opacity: 0 }}>
-                <button
-                  onClick={() => placeOrder()}
-                  disabled={loading}
-                  className="bg-brand-600 text-white w-full py-3 rounded font-bold"
-                >
-                  {loading ? "Processing..." : "Place Order"}
+              <motion.div key="review" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+                <div className="bg-brand-50 p-4 rounded-2xl mb-6">
+                  <p className="text-sm font-bold text-brand-800">Delivery to:</p>
+                  <p className="text-sm text-brand-700">{shipping.name}</p>
+                  <p className="text-xs text-brand-600">{shipping.address}, {shipping.city}</p>
+                </div>
+                <button onClick={() => placeOrder()} disabled={loading} className="bg-brand-600 text-white w-full py-4 rounded-2xl font-bold shadow-xl">
+                  {loading ? "Finalizing Order..." : `Confirm Order - $${total.toFixed(2)}`}
                 </button>
+                <button onClick={() => setStep(2)} className="w-full mt-4 text-sm text-gray-400">Back to Payment</button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="p-6 bg-gray-50">
-          <h3 className="font-bold mb-4">Order Summary</h3>
-          {cart.map((item) => (
-            <div key={item.id} className="flex gap-3 mb-4 items-center">
-              <img src={item.img}
-                className="h-14 w-14 rounded object-cover"/>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">{item.name}</div>
-                <div className="text-xs text-gray-500">
-                  Qty: {item.quantity}
+        <div className="p-6 bg-gray-50 overflow-y-auto">
+          <h3 className="font-bold mb-4 flex items-center justify-between">
+            Summary <span>({cart.length} items)</span>
+          </h3>
+          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            {cart.map((item) => (
+              <div key={item.id} className="flex gap-3 items-center">
+                <img src={item.img} className="h-12 w-12 rounded-xl object-cover shadow-sm"/>
+                <div className="flex-1 text-sm">
+                  <p className="font-bold text-ink">{item.name}</p>
+                  <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
                 </div>
+                <p className="font-bold text-sm">${(item.price * item.quantity).toFixed(2)}</p>
               </div>
-              <div className="text-sm font-bold">
-                ${(item.price * item.quantity).toFixed(2)}
-              </div>
+            ))}
+          </div>
+          <hr className="my-6 border-gray-200"/>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span>Subtotal</span><span className="font-semibold">${subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Delivery</span><span className="font-semibold">${shippingFee}</span></div>
+            <div className="flex justify-between text-lg font-black text-brand-600 pt-2 border-t border-dashed border-gray-300">
+              <span>Grand Total</span><span>${total.toFixed(2)}</span>
             </div>
-          ))}
-          <hr className="my-4"/>
-          <div className="flex justify-between text-sm mb-2">
-            <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm mb-2">
-            <span>Shipping</span>
-            <span>${shippingFee}</span>
-          </div>
-          <div className="flex justify-between font-bold text-lg">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -411,12 +388,12 @@ function CheckoutModal({ onClose }) {
 function MenuCard({ item, onClick }) {
   return (
     <div onClick={() => onClick(item)} className="cursor-pointer group">
-      <div className="rounded-3xl overflow-hidden bg-white shadow-soft2">
+      <div className="rounded-3xl overflow-hidden bg-white shadow-soft2 aspect-square">
         <img src={item.img} alt={item.name}
-          className="h-[180px] w-full object-cover group-hover:scale-110 transition-transform duration-500"/>
+          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"/>
       </div>
-      <div className="mt-2 flex justify-between px-1">
-        <span className="font-bold text-sm">{item.name}</span>
+      <div className="mt-3 flex justify-between px-2">
+        <span className="font-bold text-sm text-ink">{item.name}</span>
         <span className="text-sm font-bold text-brand-600">${item.price}</span>
       </div>
     </div>
@@ -435,16 +412,13 @@ export default function MenuGrid() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const res = await fetch(
-        "https://evaalasting.othniel-phantasy.com.ng/api/products.php"
-      );
-      const json = await res.json();
-      setItems(json.products || []);
-
-      const cats = Array.from(
-        new Set((json.products || []).map((p) => p.tag || "Other"))
-      );
-      setCategories(["All", ...cats]);
+      try {
+        const res = await fetch("https://evaalasting.othniel-phantasy.com.ng/api/products.php");
+        const json = await res.json();
+        setItems(json.products || []);
+        const cats = Array.from(new Set((json.products || []).map((p) => p.tag || "Other")));
+        setCategories(["All", ...cats]);
+      } catch (e) { console.error("Fetch products failed", e); }
     }
     fetchProducts();
   }, []);
@@ -455,39 +429,28 @@ export default function MenuGrid() {
   }, [active, items]);
 
   return (
-    <section className="py-12">
+    <section className="py-12 bg-gray-50/50 min-h-screen">
       <Container>
-        <div className="flex justify-center gap-2 mb-6 flex-wrap">
+        <div className="flex justify-center gap-2 mb-10 flex-wrap">
           {categories.map((c) => (
-            <FilterPill
-              key={c}
-              active={active === c}
-              onClick={() => setActive(c)}
-            >
-              {c}
-            </FilterPill>
+            <FilterPill key={c} active={active === c} onClick={() => setActive(c)}>{c}</FilterPill>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
           {filtered.map((item) => (
-            <MenuCard
-              key={item.id}
-              item={item}
-              onClick={setSelectedItem}
-            />
+            <MenuCard key={item.id} item={item} onClick={setSelectedItem} />
           ))}
         </div>
       </Container>
 
-      {/* Floating Cart Button */}
       <div
         onClick={() => setShowCheckout(true)}
-        className="fixed bottom-6 right-6 bg-brand-600 text-white h-14 w-14 rounded-full flex items-center justify-center shadow-xl cursor-pointer z-[90] hover:scale-110 transition-transform"
+        className="fixed bottom-8 right-8 bg-brand-600 text-white h-16 w-16 rounded-2xl flex items-center justify-center shadow-2xl shadow-brand-300 cursor-pointer z-[90] hover:rotate-12 transition-all active:scale-90"
       >
-        <span className="text-xl">🛒</span>
+        <span className="text-2xl">🛒</span>
         {cart.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-[10px] h-5 w-5 rounded-full flex items-center justify-center font-bold">
+          <span className="absolute -top-2 -right-2 bg-red-500 text-[11px] h-6 w-6 rounded-full flex items-center justify-center font-black border-2 border-white">
             {cart.length}
           </span>
         )}
