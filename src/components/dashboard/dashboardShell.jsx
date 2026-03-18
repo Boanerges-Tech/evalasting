@@ -100,31 +100,31 @@ function ActionButton({ label, primary = false, to = "#" }) {
 }
 
 function ProductCard({ item }) {
+  // Using item.img because that's what your API (products.php) returns
   return (
-    <Link
-      to={`/product/${item.slug}`}
+    <div
       className="overflow-hidden rounded-2xl border border-line bg-white shadow-soft2 transition hover:shadow-soft"
     >
       <img
-        src={item.image}
+        src={item.img}
         alt={item.name}
         className="h-[130px] w-full object-cover"
         loading="lazy"
       />
 
       <div className="p-4">
-        <div className="text-[10px] font-semibold text-muted">
-          {item.category}
+        <div className="text-[10px] font-semibold text-muted uppercase tracking-wider">
+          {item.tag || "Combo"}
         </div>
-        <div className="mt-1 text-[13px] font-extrabold text-ink">
+        <div className="mt-1 text-[13px] font-extrabold text-ink truncate">
           {item.name}
         </div>
         <div className="mt-2 flex items-center justify-between text-[11px]">
-          <span className="text-muted">${item.price}</span>
-          <span className="font-semibold text-brand-700">★ {item.rating}</span>
+          <span className="text-muted font-bold">${item.price}</span>
+          <span className="font-semibold text-brand-700">★ 4.9</span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -208,27 +208,28 @@ export default function DashboardShell() {
 
   async function loadDashboard() {
     try {
-      const [overviewRes, recRes] = await Promise.all([
+      // 1. Fetch Overview (Stats/User)
+      // 2. Fetch Products (Using same endpoint as MenuGrid)
+      const [overviewRes, productsRes] = await Promise.all([
         fetch(`${API_BASE}/dashboard/overview.php`, {
           credentials: "include",
         }),
-        fetch(`${API_BASE}/dashboard/recommendations.php`, {
-          credentials: "include",
-        }),
+        fetch(`${API_BASE}/products.php`),
       ]);
 
       const overviewData = await overviewRes.json();
-      const recData = await recRes.json();
+      const productsData = await productsRes.json();
 
-      if (overviewRes.ok && overviewData.ok) {
+      if (overviewRes.ok) {
         setOverview(overviewData);
       }
 
-      if (recRes.ok && recData.ok) {
-        setItems(recData.items || []);
+      // If products exist, grab the first 3 as "Recommended"
+      if (productsRes.ok && productsData.products) {
+        setItems(productsData.products.slice(0, 3));
       }
     } catch (e) {
-      console.error(e);
+      console.error("Dashboard Load Error:", e);
     } finally {
       setLoading(false);
     }
@@ -282,7 +283,7 @@ export default function DashboardShell() {
         <section className="rounded-3xl bg-[#f7f2ea] px-5 py-6 sm:px-8 lg:rounded-l-none lg:rounded-r-3xl">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[12px] font-semibold text-muted">
+              <div className="text-[12px] font-semibold text-muted font-bold">
                 Overview
               </div>
             </div>
@@ -290,21 +291,21 @@ export default function DashboardShell() {
               <button className="rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-ink shadow-soft2">
                 ☾
               </button>
-              <button className="rounded-full bg-[#024f4a] px-3 py-1.5 text-[11px] font-semibold text-white">
-                {user?.initials || "EA"}
+              <button className="rounded-full bg-[#024f4a] px-3 py-1.5 text-[11px] font-semibold text-white uppercase">
+                {user?.name?.slice(0, 2) || "EA"}
               </button>
             </div>
           </div>
 
           <div className="mt-5 rounded-3xl bg-[#0e5e56] p-5 text-white">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-600 text-[12px] font-extrabold">
-                {user?.initials?.slice(0, 1) || "E"}
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-600 text-[12px] font-extrabold uppercase">
+                {user?.name?.slice(0, 1) || "E"}
               </div>
               <div>
                 <div className="text-[11px] text-white/70">Hello,</div>
                 <div className="text-[18px] font-extrabold">
-                  {user?.name || "Samuel"}
+                  {user?.name || "Member"}
                 </div>
               </div>
             </div>
@@ -358,14 +359,18 @@ export default function DashboardShell() {
             </div>
 
             {loading ? (
-              <div className="mt-4 text-[12px] text-muted">
-                Loading recommendations...
+              <div className="mt-8 flex justify-center">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-600 border-t-transparent"></div>
               </div>
-            ) : (
+            ) : items.length > 0 ? (
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => (
                   <ProductCard key={item.id} item={item} />
                 ))}
+              </div>
+            ) : (
+              <div className="mt-4 text-[12px] text-muted">
+                No items found. Check back later!
               </div>
             )}
           </div>
