@@ -64,16 +64,21 @@ const updateQuantity = (index, qty) => {
   );
 };
 
-  return (
-    <CartContext.Provider
-  value={{
-    cart,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-  }}
->
-      {children}
-    </CartContext.Provider>
-  );
+const clearCart = () => {
+  setCart([]); // This will trigger your "SAVE CART" useEffect and clear it on the server too
+};
+
+return (
+  <CartContext.Provider
+    value={{
+      cart,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart, // 👈 Add this line here
+    }}
+  >
+    {children}
+  </CartContext.Provider>
+);
 }

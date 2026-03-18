@@ -245,45 +245,55 @@ function CheckoutModal({ onClose }) {
   };
 
   const placeOrder = async (method = "manual", reference = "") => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        "https://evaalasting.othniel-phantasy.com.ng/api/orders/create-order.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: loggedInUser?.id || null, // Pass user ID to backend
-            shipping,
-            paymentMethod: method,
-            paymentReference: reference,
-            items: cart.map((p) => ({
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              quantity: p.quantity,
-            })),
-            subtotal,
-            shippingFee,
-            total,
-          }),
-        }
-      );
-
-      const data = await res.json();
-      if (data.success) {
-        clearCart();
-        alert("Order placed successfully!");
-        onClose();
-      } else {
-        alert("Error: " + (data.error || "Unknown error"));
+  setLoading(true);
+  try {
+    const res = await fetch(
+      "https://evaalasting.othniel-phantasy.com.ng/api/orders/create-order.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: loggedInUser?.id || null,
+          shipping,
+          paymentMethod: method,
+          paymentReference: reference,
+          items: cart.map((p) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            quantity: p.quantity,
+          })),
+          subtotal,
+          shippingFee,
+          total,
+        }),
       }
-    } catch (err) {
-      console.error(err);
-      alert("Order failed to connect to server");
+    );
+
+    // Check if the server actually returned a 200 OK
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Server responded with ${res.status}: ${errorText}`);
     }
+
+    const data = await res.json();
+
+    if (data.success) {
+      clearCart();
+      alert("Order placed successfully! Order ID: " + data.order_id);
+      onClose();
+      // Optional: Redirect to a success page
+      // window.location.href = "/order-success?id=" + data.order_id;
+    } else {
+      alert("Order Error: " + (data.error || "Unknown error"));
+    }
+  } catch (err) {
+    console.error("Order process error:", err);
+    alert("System Error: " + err.message);
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[110] p-4">
