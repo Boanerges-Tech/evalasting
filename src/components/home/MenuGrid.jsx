@@ -257,12 +257,13 @@ function CheckoutModal({ onClose }) {
           shipping,
           paymentMethod: method,
           paymentReference: reference,
-          items: cart.map((p) => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            quantity: p.quantity,
-          })),
+          // Inside placeOrder in MenuGrid.jsx
+items: cart.map((p) => ({
+  productId: p.id, // 👈 Change 'id' to 'productId' to match your PHP
+  name: p.name,
+  price: p.price,
+  quantity: p.quantity,
+})),
           subtotal,
           shippingFee,
           total,

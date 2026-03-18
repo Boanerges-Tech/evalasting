@@ -41,14 +41,13 @@ function ActionButton({ label, primary = false, to = "#", onClick }) {
   return to !== "#" ? <Link to={to} className={cn}><span>{label}</span><span>›</span></Link> : <button onClick={onClick} className={cn}><span>{label}</span><span>›</span></button>;
 }
 
-/* ================= PRODUCT MODAL (EXACT FROM MENUGRID) ================= */
+/* ================= PRODUCT MODAL ================= */
 function ProductModal({ item, onClose, setShowCheckout }) {
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   const [addons, setAddons] = useState([]);
   const [spice, setSpice] = useState(2);
   const addonOptions = [{ name: "Egg", price: 5 }, { name: "Salmon", price: 7 }];
-  const spiceLabels = ["Mild", "Low", "Medium", "Hot", "Extreme"];
 
   const toggleAddon = (addon) => {
     setAddons((prev) => prev.includes(addon) ? prev.filter((a) => a !== addon) : [...prev, addon]);
@@ -67,7 +66,7 @@ function ProductModal({ item, onClose, setShowCheckout }) {
     <div className="fixed inset-0 z-[150] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
         <div className="md:w-5/12 bg-gray-50 flex items-center justify-center p-6 relative">
-          <img src={item.img} className="w-48 h-48 md:w-60 md:h-60 rounded-full object-cover shadow-xl border-4 border-white" />
+          <img src={item.img} className="w-48 h-48 md:w-60 md:h-60 rounded-full object-cover shadow-xl border-4 border-white" alt={item.name} />
         </div>
         <div className="md:w-7/12 p-6 overflow-y-auto flex flex-col">
           <div className="flex justify-between mb-4">
@@ -100,12 +99,29 @@ function ProductModal({ item, onClose, setShowCheckout }) {
   );
 }
 
-/* ================= CHECKOUT MODAL (WITH REMOVE FEATURE) ================= */
-function CheckoutModal({ onClose, userEmail }) {
+/* ================= CHECKOUT MODAL ================= */
+function CheckoutModal({ onClose, userData }) {
   const { cart, clearCart, removeFromCart } = useCart();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [shipping, setShipping] = useState({ name: "", email: userEmail || "", phone: "", address: "" });
+  const [shipping, setShipping] = useState({ 
+    name: "", 
+    email: "", 
+    phone: "", 
+    address: "" 
+  });
+
+  // Pre-fill user details automatically
+  useEffect(() => {
+    if (userData) {
+      setShipping({
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        address: userData.address || ""
+      });
+    }
+  }, [userData]);
 
   const subtotal = cart.reduce((t, item) => t + item.price * item.quantity, 0);
   const shippingFee = 5.99;
@@ -113,18 +129,43 @@ function CheckoutModal({ onClose, userEmail }) {
 
   const handleChange = (e) => setShipping({ ...shipping, [e.target.name]: e.target.value });
 
-  const placeOrder = async (method = "manual", reference = "") => {
+  const placeOrder = async (method = "cod", reference = "") => {
     if (cart.length === 0) return alert("Cart is empty");
     setLoading(true);
     try {
+      // FIX: Ensure 'items' contains an 'id' key as expected by the PHP script
+      const orderPayload = {
+        userId: userData?.id || null, 
+        shipping, 
+        paymentMethod: method, 
+        paymentReference: reference, 
+        items: cart.map(item => ({
+          id: item.id, // Changed from productId to id to fix PHP line 76 error
+          quantity: item.quantity,
+          price: item.price
+        })), 
+        subtotal: subtotal.toFixed(2), 
+        shippingFee: shippingFee.toFixed(2), 
+        total: total.toFixed(2)
+      };
+
       const res = await fetch(`${API_BASE}/orders/create-order.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shipping, paymentMethod: method, paymentReference: reference, items: cart, subtotal, shippingFee, total }),
+        body: JSON.stringify(orderPayload),
       });
+
       const data = await res.json();
-      if (data.success) { clearCart(); alert("Order placed!"); onClose(); }
-    } catch (err) { alert("Order failed"); }
+      if (data.success || data.ok) { 
+        clearCart(); 
+        alert("Order successful!"); 
+        onClose(); 
+      } else {
+        alert(data.message || "Failed to place order.");
+      }
+    } catch (err) { 
+      alert("Error: " + err.message); 
+    }
     setLoading(false);
   };
 
@@ -138,17 +179,19 @@ function CheckoutModal({ onClose, userEmail }) {
           </div>
           <AnimatePresence mode="wait">
             {step === 1 ? (
-              <motion.div key="s1" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                <input name="name" placeholder="Full Name" onChange={handleChange} className="border w-full p-3 rounded-xl mb-3"/>
-                <input name="email" value={shipping.email} placeholder="Email" onChange={handleChange} className="border w-full p-3 rounded-xl mb-3"/>
-                <input name="phone" placeholder="Phone" onChange={handleChange} className="border w-full p-3 rounded-xl mb-3"/>
-                <textarea name="address" placeholder="Delivery Address" onChange={handleChange} className="border w-full p-3 rounded-xl mb-4 h-24"/>
+              <motion.div key="s1" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-3">
+                <input name="name" value={shipping.name} placeholder="Full Name" onChange={handleChange} className="border w-full p-3 rounded-xl"/>
+                <input name="email" value={shipping.email} placeholder="Email" onChange={handleChange} className="border w-full p-3 rounded-xl"/>
+                <input name="phone" value={shipping.phone} placeholder="Phone" onChange={handleChange} className="border w-full p-3 rounded-xl"/>
+                <textarea name="address" value={shipping.address} placeholder="Delivery Address" onChange={handleChange} className="border w-full p-3 rounded-xl h-24"/>
                 <button onClick={() => setStep(2)} className="bg-brand-600 text-white w-full py-4 rounded-xl font-bold">Continue to Payment</button>
               </motion.div>
             ) : (
               <motion.div key="s2" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                <button onClick={() => placeOrder("cod")} className="w-full border-2 p-4 rounded-xl mb-3 font-bold hover:bg-gray-50 text-left flex justify-between">Cash on Delivery <span>›</span></button>
-                <button onClick={() => alert("Stripe Integration")} className="w-full border-2 p-4 rounded-xl mb-3 font-bold hover:bg-gray-50 text-left flex justify-between">Pay with Card <span>›</span></button>
+                <button onClick={() => placeOrder("cod")} className="w-full border-2 p-4 rounded-xl mb-3 font-bold hover:bg-gray-50 text-left flex justify-between">
+                  {loading ? "Processing..." : "Cash on Delivery"} <span>›</span>
+                </button>
+                <button onClick={() => alert("Stripe ready soon!")} className="w-full border-2 p-4 rounded-xl mb-3 font-bold hover:bg-gray-50 text-left flex justify-between opacity-50">Pay with Card <span>›</span></button>
                 <button onClick={() => setStep(1)} className="text-sm text-gray-400 mt-4 underline w-full text-center">Back to Shipping</button>
               </motion.div>
             )}
@@ -158,8 +201,8 @@ function CheckoutModal({ onClose, userEmail }) {
         <div className="p-8 bg-gray-50 max-h-[600px] overflow-y-auto">
           <h3 className="font-bold mb-6 flex justify-between items-center">Your Basket <button onClick={onClose} className="text-gray-400 font-normal text-sm">Close</button></h3>
           {cart.length === 0 ? <p className="text-muted text-sm">Your cart is empty.</p> : cart.map((item, idx) => (
-            <div key={idx} className="flex gap-3 mb-4 items-center bg-white p-3 rounded-2xl shadow-sm relative group">
-              <img src={item.img} className="h-14 w-14 rounded-xl object-cover" />
+            <div key={idx} className="flex gap-3 mb-4 items-center bg-white p-3 rounded-2xl shadow-sm relative">
+              <img src={item.img} className="h-14 w-14 rounded-xl object-cover" alt={item.name} />
               <div className="flex-1">
                 <p className="text-sm font-bold truncate">{item.name}</p>
                 <p className="text-[10px] text-gray-400">Qty: {item.quantity}</p>
@@ -172,7 +215,7 @@ function CheckoutModal({ onClose, userEmail }) {
           ))}
           <div className="mt-6 space-y-2 border-t pt-4 text-sm font-semibold">
             <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between text-brand-600"><span>Delivery</span><span>${shippingFee}</span></div>
+            <div className="flex justify-between text-brand-600"><span>Delivery</span><span>${shippingFee.toFixed(2)}</span></div>
             <div className="flex justify-between text-lg font-black pt-2 border-t"><span>Total</span><span>${total.toFixed(2)}</span></div>
           </div>
         </div>
@@ -206,7 +249,7 @@ function ProductCard({ item, onAddSuccess, onOpenModal }) {
   );
 }
 
-/* ================= DASHBOARD SHELL ================= */
+/* ================= MAIN DASHBOARD ================= */
 export default function DashboardShell() {
   const { logout } = useAuth();
   const { cart } = useCart();
@@ -240,7 +283,6 @@ export default function DashboardShell() {
   return (
     <div className="mx-auto max-w-[1150px] px-4 sm:px-6 relative pb-20">
       
-      {/* TOAST WITH SHORTCUT */}
       <AnimatePresence>
         {toast && (
           <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -50, opacity: 0 }} className="fixed top-6 right-6 left-6 md:left-auto z-[250] bg-white border-l-4 border-brand-600 rounded-xl shadow-2xl p-4 md:w-80 flex items-center justify-between">
@@ -269,7 +311,7 @@ export default function DashboardShell() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-xs font-bold text-muted uppercase tracking-widest">User Dashboard</h1>
             <div className="flex gap-3">
-              <button onClick={() => setShowCheckout(true)} className="relative bg-white p-2 rounded-full shadow-sm hover:bg-gray-50 transition">
+              <button onClick={() => setShowCheckout(true)} className="relative bg-white p-2 rounded-full shadow-sm">
                 🛒 {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cart.length}</span>}
               </button>
               <div className="bg-[#024f4a] text-white text-xs px-3 py-2 rounded-full font-bold">{user?.name?.slice(0,2).toUpperCase() || "EA"}</div>
@@ -314,7 +356,7 @@ export default function DashboardShell() {
         {selectedItem && <ProductModal item={selectedItem} onClose={() => setSelectedItem(null)} setShowCheckout={setShowCheckout} />}
       </AnimatePresence>
 
-      {showCheckout && <CheckoutModal onClose={() => setShowCheckout(false)} userEmail={user?.email} />}
+      {showCheckout && <CheckoutModal onClose={() => setShowCheckout(false)} userData={user} />}
       
       <button onClick={() => setShowCheckout(true)} className="fixed bottom-6 right-6 z-[100] bg-brand-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all">
          <span className="text-xl">🛒</span>
