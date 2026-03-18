@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Container from "../layout/Container";
 
 const API = "https://evaalasting.othniel-phantasy.com.ng/api/orders/create-order.php";
@@ -61,7 +61,7 @@ function SuccessModal({ order, onClose }) {
 }
 
 export default function CheckoutStepThree() {
-  const [cart, setCart] = useState([]);
+  const [cart] = useState(() => JSON.parse(localStorage.getItem("cart") || "[]"));
   const [orderId, setOrderId] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,11 +75,6 @@ export default function CheckoutStepThree() {
     state: "",
     country: "",
   });
-
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCart(storedCart);
-  }, []);
 
   const subtotal = cart.reduce((t, item) => t + item.price * item.qty, 0);
   const shippingFee = 5.99;

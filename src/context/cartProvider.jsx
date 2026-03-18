@@ -1,31 +1,78 @@
-// src/context/CartProvider.jsx
-import { useState, useContext } from "react";
+import { useState, useEffect } from "react";
 import { CartContext } from "./CartContext";
-
-export const useCart = () => useContext(CartContext);
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
+  const [hydrated, setHydrated] = useState(false); // 👈 important
 
-  const addToCart = (product, quantity = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((p) => p.id === product.id);
-      if (existing) {
-        return prev.map((p) =>
-          p.id === product.id ? { ...p, quantity: p.quantity + quantity } : p
-        );
-      }
-      return [...prev, { ...product, quantity }];
+  // LOAD CART
+  useEffect(() => {
+    fetch("https://evaalasting.othniel-phantasy.com.ng/api/cart/get.php")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.cart) setCart(data.cart);
+        setHydrated(true); // ✅ mark as loaded
+      })
+      .catch(() => setHydrated(true));
+  }, []);
+
+  // SAVE CART (only AFTER load)
+  useEffect(() => {
+    if (!hydrated) return;
+
+    fetch("https://evaalasting.othniel-phantasy.com.ng/api/cart/save.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cart }),
     });
-  };
+  }, [cart, hydrated]);
 
-  const removeFromCart = (id) =>
-    setCart((prev) => prev.filter((p) => p.id !== id));
+  const addToCart = (item) => {
+  setCart((prev) => {
+    const existingIndex = prev.findIndex(
+      (p) =>
+        p.id === item.id &&
+        JSON.stringify(p.addons) === JSON.stringify(item.addons) &&
+        p.spice === item.spice
+    );
 
-  const clearCart = () => setCart([]);
+    if (existingIndex !== -1) {
+      // ✅ UPDATE (replace quantity)
+      return prev.map((p, i) =>
+        i === existingIndex
+          ? { ...p, quantity: p.quantity + item.quantity }
+          : p
+      );
+    }
+
+    return [...prev, item];
+  });
+};
+
+const removeFromCart = (index) => {
+  setCart((prev) => prev.filter((_, i) => i !== index));
+};
+
+const updateQuantity = (index, qty) => {
+  if (qty < 1) return;
+  setCart((prev) =>
+    prev.map((item, i) =>
+      i === index ? { ...item, quantity: qty } : item
+    )
+  );
+};
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider
+  value={{
+    cart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+  }}
+>
       {children}
     </CartContext.Provider>
   );

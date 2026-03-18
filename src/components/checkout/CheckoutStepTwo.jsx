@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Container from "../layout/Container";
-import { useCart } from "../../context/cartProvider";
+import { useCart } from "../../context/useCart";
 import { useAuth } from "../../context/useAuth";
 
 function Step({ number, label, active = false }) {

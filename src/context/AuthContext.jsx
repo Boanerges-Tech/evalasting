@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   async function refreshUser() {
     try {
       const res = await fetch(`${API_BASE}/auth/me.php`, {
+        method: "GET",
         credentials: "include",
       });
 
